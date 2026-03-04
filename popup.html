@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg-primary: #0f0f14;
+      --bg-secondary: #1a1a24;
+      --bg-tertiary: #252532;
+      --accent: #7c3aed;
+      --accent-hover: #8b5cf6;
+      --accent-glow: rgba(124, 58, 237, 0.4);
+      --success: #10b981;
+      --danger: #ef4444;
+      --text-primary: #f4f4f5;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+      --border: rgba(255,255,255,0.08);
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+      width: 380px; 
+      min-height: 520px; 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+      background: var(--bg-primary); 
+      color: var(--text-primary); 
+    }
+    
+    /* Header */
+    .header { 
+      background: var(--bg-secondary); 
+      padding: 16px 20px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between; 
+      border-bottom: 1px solid var(--border);
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .logo { 
+      width: 36px; 
+      height: 36px; 
+      background: linear-gradient(135deg, var(--accent), #a855f7); 
+      border-radius: 10px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+    .header h1 { 
+      font-size: 18px; 
+      font-weight: 700; 
+      background: linear-gradient(90deg, var(--text-primary), var(--text-secondary));
+      -webkit-background-clip: text; 
+      -webkit-text-fill-color: transparent;
+    }
+    .status { 
+      padding: 6px 12px; 
+      border-radius: 20px; 
+      font-size: 11px; 
+      font-weight: 600; 
+      text-transform: uppercase; 
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+    .status.locked { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+    .status.locked::before { background: #f87171; }
+    .status.unlocked { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .status.unlocked::before { background: #34d399; }
+    
+    /* Error */
+    .error { 
+      background: rgba(239, 68, 68, 0.1); 
+      color: #f87171; 
+      padding: 12px 20px; 
+      font-size: 12px; 
+      border-left: 3px solid #ef4444;
+      animation: slideDown 0.3s ease;
+    }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* Actions */
+    .actions { padding: 16px 20px; display: flex; gap: 10px; }
+    .btn { 
+      flex: 1; 
+      padding: 12px 16px; 
+      border: none; 
+      border-radius: 12px; 
+      cursor: pointer; 
+      font-weight: 600; 
+      font-size: 13px; 
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-unlock { 
+      background: linear-gradient(135deg, var(--accent), #6d28d9); 
+      color: white; 
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+    .btn-unlock:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--accent-glow); }
+    .btn-lock { 
+      background: var(--bg-tertiary); 
+      color: #f87171; 
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+    .btn-lock:hover { background: rgba(239, 68, 68, 0.1); }
+    .btn-icon { 
+      width: 48px; 
+      flex: none; 
+      background: var(--bg-tertiary); 
+      color: var(--text-secondary);
+      font-size: 18px;
+    }
+    .btn-icon:hover { background: var(--bg-secondary); color: var(--text-primary); }
+    .btn-icon.loading { opacity: 0.5; pointer-events: none; }
+    
+    /* Fingerprint */
+    .fingerprint-section { padding: 0 20px 16px; display: none; }
+    .fingerprint-btn { 
+      width: 100%; 
+      padding: 14px; 
+      border: 2px dashed rgba(124, 58, 237, 0.3); 
+      border-radius: 12px; 
+      background: transparent; 
+      color: var(--accent); 
+      cursor: pointer; 
+      font-size: 13px; 
+      font-weight: 600;
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 10px; 
+      transition: all 0.2s; 
+    }
+    .fingerprint-btn:hover { 
+      background: rgba(124, 58, 237, 0.1); 
+      border-color: var(--accent);
+    }
+    .fingerprint-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    /* Search */
+    .search-box { padding: 0 20px 16px; }
+    .search-box input { 
+      width: 100%; 
+      padding: 12px 16px; 
+      border: 1px solid var(--border);
+      border-radius: 12px; 
+      background: var(--bg-secondary); 
+      color: var(--text-primary); 
+      font-size: 14px; 
+      transition: all 0.2s;
+    }
+    .search-box input:focus { 
+      outline: none; 
+      border-color: var(--accent); 
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .search-box input::placeholder { color: var(--text-muted); }
+    
+    /* Stats */
+    .stats { 
+      padding: 0 20px 12px; 
+      font-size: 12px; 
+      color: var(--text-muted);
+      display: none;
+    }
+    .stats span { color: var(--accent); font-weight: 600; }
+    
+    /* Entries */
+    .entries { 
+      max-height: 340px; 
+      overflow-y: auto; 
+      padding: 0 12px; 
+    }
+    .entries::-webkit-scrollbar { width: 4px; }
+    .entries::-webkit-scrollbar-track { background: transparent; }
+    .entries::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 2px; }
+    
+    .entry { 
+      padding: 14px 16px; 
+      margin-bottom: 8px; 
+      border-radius: 12px; 
+      background: var(--bg-secondary); 
+      cursor: pointer; 
+      transition: all 0.2s; 
+      border: 1px solid transparent;
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center;
+    }
+    .entry:hover { 
+      background: var(--bg-tertiary); 
+      border-color: var(--accent);
+      transform: translateX(4px);
+    }
+    .entry.selected {
+      background: var(--bg-tertiary);
+      border-color: var(--accent);
+    }
+    .entry-info { flex: 1; min-width: 0; }
+    .entry-name { 
+      font-weight: 600; 
+      font-size: 14px; 
+      color: var(--text-primary); 
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .entry-name .icon { font-size: 12px; }
+    .entry-url { 
+      font-size: 12px; 
+      color: var(--text-muted); 
+      overflow: hidden; 
+      text-overflow: ellipsis; 
+      white-space: nowrap; 
+    }
+    .entry-actions { 
+      display: flex; 
+      gap: 4px; 
+      opacity: 0; 
+      transition: opacity 0.2s; 
+    }
+    .entry:hover .entry-actions { opacity: 1; }
+    .entry-btn { 
+      width: 32px; 
+      height: 32px; 
+      border: none; 
+      border-radius: 8px; 
+      background: var(--bg-primary); 
+      color: var(--text-secondary); 
+      cursor: pointer; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .entry-btn:hover { background: var(--accent); color: white; }
+    .entry-btn.loading { opacity: 0.5; }
+    
+    /* Details */
+    .details { 
+      padding: 20px; 
+      display: none; 
+      animation: slideIn 0.3s ease;
+      background: var(--bg-secondary);
+      min-height: 480px;
+    }
+    .details.show { display: block; }
+    @keyframes slideIn { 
+      from { opacity: 0; transform: translateX(20px); } 
+      to { opacity: 1; transform: translateX(0); } 
+    }
+    
+    .detail-header { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      margin-bottom: 24px; 
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .detail-title { 
+      font-size: 20px; 
+      font-weight: 700; 
+      color: var(--text-primary);
+      word-break: break-word;
+    }
+    .back-btn { 
+      background: var(--bg-tertiary); 
+      border: none; 
+      color: var(--text-secondary); 
+      cursor: pointer; 
+      display: flex; 
+      align-items: center; 
+      gap: 6px; 
+      font-size: 13px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .back-btn:hover { background: var(--bg-primary); color: var(--text-primary); }
+    
+    .detail-row { margin-bottom: 20px; }
+    .detail-label { 
+      font-size: 11px; 
+      text-transform: uppercase; 
+      letter-spacing: 1px; 
+      color: var(--text-muted); 
+      margin-bottom: 8px; 
+    }
+    .detail-value { 
+      font-size: 14px; 
+      word-break: break-all; 
+      padding: 14px 16px; 
+      background: var(--bg-primary); 
+      border-radius: 10px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between;
+      border: 1px solid var(--border);
+    }
+    .detail-value a { color: var(--accent); text-decoration: none; }
+    .detail-value a:hover { text-decoration: underline; }
+    .detail-value.password { cursor: pointer; }
+    .detail-value.password.revealed { color: var(--success); border-color: rgba(16, 185, 129, 0.3); }
+    .detail-value.empty { color: var(--text-muted); font-style: italic; }
+    
+    /* OTP */
+    .otp-box { 
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.15), rgba(124, 58, 237, 0.05)); 
+      border: 1px solid rgba(124, 58, 237, 0.3); 
+      border-radius: 16px; 
+      padding: 20px; 
+      margin: 20px 0;
+      text-align: center;
+    }
+    .otp-label { 
+      font-size: 11px; 
+      text-transform: uppercase; 
+      letter-spacing: 1px; 
+      color: var(--text-muted); 
+      margin-bottom: 12px; 
+    }
+    .otp-code { 
+      font-size: 32px; 
+      font-weight: 700; 
+      font-family: 'JetBrains Mono', 'SF Mono', monospace; 
+      color: var(--accent); 
+      letter-spacing: 12px; 
+      text-align: center;
+      text-shadow: 0 0 30px var(--accent-glow);
+    }
+    .otp-timer { 
+      font-size: 12px; 
+      color: var(--text-muted); 
+      text-align: center; 
+      margin-top: 12px; 
+    }
+    .otp-timer.warning { color: #f87171; }
+    
+    /* Copy Buttons */
+    .copy-btn { 
+      padding: 8px 14px; 
+      border: none; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      font-size: 12px; 
+      font-weight: 600; 
+      background: var(--bg-tertiary); 
+      color: var(--text-secondary); 
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .copy-btn:hover { background: var(--accent); color: white; }
+    .copy-btn.copied { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+    
+    .copy-btns { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+    .copy-btns .copy-btn { flex: 1; justify-content: center; }
+
+    /* Editor */
+    .edit-panel {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-secondary);
+      display: none;
+    }
+    .edit-panel.show { display: block; }
+    .edit-grid { display: grid; gap: 10px; }
+    .edit-grid label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+    .edit-grid input, .edit-grid select, .edit-grid textarea {
+      width: 100%;
+      margin-top: 6px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-size: 13px;
+      font-family: inherit;
+    }
+    .edit-grid textarea {
+      min-height: 84px;
+      resize: vertical;
+      font-family: 'JetBrains Mono', 'SF Mono', monospace;
+      font-size: 12px;
+    }
+    .edit-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .edit-error {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #f87171;
+      display: none;
+    }
+    .edit-actions .btn {
+      flex: 1;
+      padding: 10px 12px;
+      font-size: 12px;
+    }
+    
+    /* Empty */
+    .empty { 
+      padding: 60px 20px; 
+      text-align: center; 
+      color: var(--text-muted); 
+    }
+    .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+    .empty-text { font-size: 14px; }
+    
+    /* Toast */
+    .toast { 
+      position: fixed; 
+      bottom: 24px; 
+      left: 50%; 
+      transform: translateX(-50%) translateY(100px); 
+      background: var(--success); 
+      color: white; 
+      padding: 12px 24px; 
+      border-radius: 10px; 
+      font-size: 13px; 
+      font-weight: 600; 
+      opacity: 0; 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    
+    /* Icons */
+    .icon-lock { font-size: 16px; }
+    .icon-key { font-size: 14px; }
+    .icon-user { font-size: 14px; }
+    .icon-otp { font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">🔐</div>
+      <h1>hwvault</h1>
+    </div>
+    <span id="status" class="status locked">Locked</span>
+  </div>
+  
+  <div id="error" class="error" style="display: none;"></div>
+  
+  <div class="actions">
+    <button id="unlockBtn" class="btn btn-unlock">
+      <span>🔓</span> Unlock
+    </button>
+    <button id="lockBtn" class="btn btn-lock" style="display: none;">
+      <span>🔒</span> Lock
+    </button>
+    <button id="refreshBtn" class="btn btn-icon" title="Refresh">↻</button>
+    <button id="newBtn" class="btn btn-icon" title="New credential">＋</button>
+    <button id="autofillBtn" class="btn btn-icon" title="Autofill current site">⚡</button>
+    <button id="genPassBtn" class="btn btn-icon" title="Generate secure password">🎲</button>
+  </div>
+
+  <div class="edit-panel" id="editPanel">
+    <div class="edit-grid">
+      <label>Credential Type
+        <select id="editType">
+          <option value="password">password</option>
+          <option value="ssh_key">ssh_key</option>
+          <option value="gpg_key">gpg_key</option>
+          <option value="mtls_cert">mtls_cert</option>
+          <option value="api_token">api_token</option>
+          <option value="note">note</option>
+          <option value="binary_blob">binary_blob</option>
+        </select>
+      </label>
+      <label>Name
+        <input id="editName" type="text" />
+      </label>
+      <label>URL
+        <input id="editUrl" type="text" />
+      </label>
+      <label>Username
+        <input id="editUser" type="text" />
+      </label>
+      <label>Password / Secret
+        <input id="editPass" type="text" />
+      </label>
+      <label>OTP
+        <input id="editOtp" type="text" />
+      </label>
+      <label>Tags (comma-separated)
+        <input id="editTags" type="text" />
+      </label>
+      <label>Folder
+        <input id="editFolder" type="text" />
+      </label>
+      <label>Note
+        <input id="editNote" type="text" />
+      </label>
+      <label>Payload JSON
+        <textarea id="editPayload" placeholder='{"ssh_key":{"private_pem":"...","public":"..."}}'></textarea>
+      </label>
+      <div style="display:flex; gap:8px;">
+        <button id="payloadTemplateBtn" class="copy-btn" style="flex:1;">Use Template</button>
+      </div>
+      <div id="editError" class="edit-error"></div>
+    </div>
+    <div class="edit-actions">
+      <button id="saveEditBtn" class="btn btn-unlock"><span>💾</span> Save</button>
+      <button id="cancelEditBtn" class="btn btn-lock"><span>✕</span> Cancel</button>
+    </div>
+  </div>
+
+  <div class="fingerprint-section" id="autofillPicker" style="display: none;">
+    <div style="margin-bottom:8px; color: var(--text-secondary); font-size:12px;">Multiple credentials match this site</div>
+    <select id="autofillSelect" style="width:100%; padding:10px; border-radius:10px; background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border); margin-bottom:8px;"></select>
+    <div style="display:flex; gap:8px;">
+      <button id="fillSelectedBtn" class="btn btn-unlock" style="flex:1;"><span>⚡</span> Fill selected</button>
+      <button id="cancelFillBtn" class="btn btn-lock" style="flex:1;"><span>✕</span> Cancel</button>
+    </div>
+  </div>
+  
+  <div class="fingerprint-section" id="fingerprintSection">
+    <button id="fingerprintBtn" class="fingerprint-btn">
+      <span>👆</span> Use Fingerprint
+    </button>
+  </div>
+  
+  <div class="search-box">
+    <input type="text" id="search" placeholder="Search passwords...">
+  </div>
+  
+  <div class="stats" id="stats">
+    <span id="entryCount">0</span> entries
+  </div>
+  
+  <div id="entries" class="entries"></div>
+  
+  <div id="details" class="details">
+    <div class="detail-header">
+      <span class="detail-title" id="detailTitle">Details</span>
+      <button class="back-btn" id="backBtn">
+        ← Back
+      </button>
+    </div>
+    
+    <div class="detail-row">
+      <div class="detail-label">Website</div>
+      <div class="detail-value">
+        <a href="#" id="detailUrl" target="_blank">Open</a>
+        <button class="copy-btn" data-field="detailUrl">Copy</button>
+      </div>
+    </div>
+    
+    <div class="detail-row">
+      <div class="detail-label">Username</div>
+      <div class="detail-value">
+        <span id="detailUser"></span>
+        <button class="copy-btn" data-field="detailUser">Copy</button>
+      </div>
+    </div>
+    
+    <div class="detail-row">
+      <div class="detail-label">Password</div>
+      <div class="detail-value password" id="detailPassBox">
+        <span id="detailPass">••••••••</span>
+        <button class="copy-btn" data-field="detailPass">Copy</button>
+      </div>
+    </div>
+    
+    <div id="otpSection" class="otp-box" style="display: none;">
+      <div class="otp-label">One-Time Password</div>
+      <div class="otp-code" id="otpCode">--- ---</div>
+      <div class="otp-timer" id="otpTimer">Regenerates in 30s</div>
+      <button class="copy-btn" id="copyOtp" style="width: 100%; margin-top: 16px;">
+        <span>📋</span> Copy OTP
+      </button>
+    </div>
+    
+    <div class="copy-btns">
+      <button class="copy-btn" id="copyAll">
+        <span>📋</span> Copy All
+      </button>
+      <button class="copy-btn" id="editBtn">
+        <span>✎</span> Edit
+      </button>
+      <button class="copy-btn" id="deleteBtn" style="margin-left:8px; border-color: rgba(239,68,68,0.4); color:#f87171;">
+        <span>🗑</span> Delete
+      </button>
+    </div>
+  </div>
+  
+  <div class="toast" id="toast">Copied!</div>
+
+  <script src="autofill_matcher.js"></script>
+  <script src="password_utils.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
