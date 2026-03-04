@@ -6,12 +6,4 @@ on:
 
 jobs:
   sanity:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Validate markdown docs
-        run: |
-          test -f README.md
-          test -f LICENSE
-          test -f NOTICE
-          test -f CREDITS.md
+    uses: edgerun-tech/hwvault/.github/workflows/reusable-sanity.yml@main
